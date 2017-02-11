@@ -10,10 +10,7 @@ import org.json.JSONObject;
 public class Course extends CatalogElement {
 
     public Course(JSONObject courseObject) throws JSONException {
-        setId(courseObject.getString("id"));
         setPhotoUrl(courseObject.getString("photoUrl"));
-        setName(courseObject.getString("name"));
-        setDescription(courseObject.getString("description"));
+        super.buildObject(courseObject);
     }
-
 }

@@ -1,5 +1,7 @@
 package com.spatwardhan.project.coursehero.models;
 
+import com.spatwardhan.project.coursehero.helpers.PartnersHelper;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -64,6 +66,20 @@ public abstract class CatalogElement {
     public static List<CatalogElement> parseJsonResponse(JSONObject responseObject) throws JSONException {
         List<CatalogElement> result = new ArrayList<>();
         JSONObject linkedObject = responseObject.getJSONObject("linked");
+        JSONArray partnersArray = linkedObject.getJSONArray("partners.v1");
+
+        if (partnersArray != null && partnersArray.length() > 0) {
+            Map<Integer, Partner> partnerMap = PartnersHelper.getPartnerMap();
+            int length = partnersArray.length();
+            int id;
+            for (int i = 0; i < length; i++) {
+                id = partnersArray.getJSONObject(i).getInt("id");
+                if (!partnerMap.containsKey(id)) {
+                    partnerMap.put(id, new Partner(partnersArray.getJSONObject(i)));
+                }
+            }
+        }
+
         JSONArray coursesArray = linkedObject.getJSONArray("courses.v1");
 
         Map<Integer, CatalogElement> coursesMap = null;
@@ -113,6 +129,26 @@ public abstract class CatalogElement {
         }
 
         return result;
+    }
+
+    void buildObject(JSONObject jsonObject) throws JSONException {
+        id = jsonObject.getString("id");
+        name = jsonObject.getString("name");
+        description = jsonObject.getString("description");
+
+        Map<Integer, Partner> partnerMap = PartnersHelper.getPartnerMap();
+        JSONArray partnersArray = jsonObject.getJSONArray("partnerIds");
+        if (partnersArray != null && partnersArray.length() > 0) {
+            partners = new ArrayList<>();
+            int length = partnersArray.length();
+            int id;
+            for (int i = 0; i < length; i++) {
+                id = Integer.valueOf(partnersArray.getString(i));
+                if (partnerMap.containsKey(id)) {
+                    partners.add(partnerMap.get(id));
+                }
+            }
+        }
     }
 
     @Override

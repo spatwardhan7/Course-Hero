@@ -15,10 +15,8 @@ public class Specialization extends CatalogElement {
     private int courseNum;
 
     public Specialization(JSONObject specializationObject) throws JSONException {
-        setId(specializationObject.getString("id"));
         setPhotoUrl(specializationObject.getString("logo"));
-        setName(specializationObject.getString("name"));
-        setDescription(specializationObject.getString("description"));
         courseNum = specializationObject.getJSONArray("courseIds").length();
+        super.buildObject(specializationObject);
     }
 }
