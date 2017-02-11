@@ -5,9 +5,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 /**
  * Created by zky447 on 2/11/17.
@@ -59,30 +59,57 @@ public abstract class CatalogElement {
     private String name;
     private String description;
     private String university;
+    private ArrayList<Partner> partners;
 
     public static List<CatalogElement> parseJsonResponse(JSONObject responseObject) throws JSONException {
         List<CatalogElement> result = new ArrayList<>();
         JSONObject linkedObject = responseObject.getJSONObject("linked");
         JSONArray coursesArray = linkedObject.getJSONArray("courses.v1");
 
-        Set<CatalogElement> coursesSet;
+        Map<Integer, CatalogElement> coursesMap = null;
         if (coursesArray != null && coursesArray.length() > 0) {
-            coursesSet = new HashSet<>();
-
+            coursesMap = new HashMap<>();
+            CatalogElement courseElement;
             // Get length of Array instead of calling .length() many times
             // in for loop for better efficiency
             // Source : https://developer.android.com/training/articles/perf-tips.html#Loops
             int length = coursesArray.length();
             for (int i = 0; i < length; i++) {
-                coursesSet.add(new Course(coursesArray.getJSONObject(i)));
+                courseElement = new Course(coursesArray.getJSONObject(i));
+                coursesMap.put(courseElement.hashCode(), courseElement);
             }
         }
 
         JSONArray specializationsArray = linkedObject.getJSONArray("onDemandSpecializations.v1");
-        Set<CatalogElement> specializationsSet;
+        Map<Integer, CatalogElement> specializationsMap = null;
 
-        if(specializationsArray != null && specializationsArray.length() > 0){
+        if (specializationsArray != null && specializationsArray.length() > 0) {
+            specializationsMap = new HashMap<>();
+            CatalogElement specializationElement;
+            int length = specializationsArray.length();
+            for (int i = 0; i < length; i++) {
+                specializationElement = new Specialization(specializationsArray.getJSONObject(i));
+                specializationsMap.put(specializationElement.hashCode(), specializationElement);
+            }
+        }
 
+        JSONArray elementsArray = responseObject.getJSONArray("elements");
+        JSONObject first = elementsArray.getJSONObject(0);
+        JSONArray entriesArray = first.getJSONArray("entries");
+
+        Map<Integer, CatalogElement> sourceMap;
+        if (entriesArray != null && entriesArray.length() > 0) {
+            for (int i = 0; i < entriesArray.length(); i++) {
+                JSONObject entryObject = entriesArray.getJSONObject(i);
+                String resourceName = entryObject.getString("resourceName");
+                Integer id = entryObject.getString("id").hashCode();
+
+                sourceMap = (resourceName.equals("courses.v1")) ? coursesMap : specializationsMap;
+
+                if (sourceMap != null && sourceMap.containsKey(id)) {
+                    result.add(sourceMap.get(id));
+                }
+            }
         }
 
         return result;
@@ -90,7 +117,7 @@ public abstract class CatalogElement {
 
     @Override
     public int hashCode() {
-        return Integer.valueOf(id);
+        return id.hashCode();
     }
 
     @Override
