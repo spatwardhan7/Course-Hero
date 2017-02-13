@@ -21,7 +21,7 @@ public class NetworkHelper {
     private static NetworkHelper instance = null;
     private static OkHttpClient client = null;
 
-    // API Param keys
+    // API Params
     private static final String API_Q_KEY = "q";
     private static final String API_Q_VAL = "search";
     private static final String API_QUERY_KEY = "query";
@@ -29,13 +29,18 @@ public class NetworkHelper {
     private static final String API_LIMIT_KEY = "limit";
     private static final String API_LIMIT_VAL = "20";
     private static final String API_FIELDS_KEY = "fields";
-    //private static final String API_FIELDS_VAL = "courseId,onDemandSpecializationId,courses.v1(name,photoUrl,partnerIds,description),onDemandSpecializations.v1(name,logo,courseIds,partnerIds),partners.v1(name)";
     private static final String API_INCLUDES_KEY = "includes";
-    //private static final String API_INCLUDES_VAL = "courseId,onDemandSpecializationId,courses.v1(partnerIds)";
 
-    //
+    // Helper Strings
+    private static final String ZERO = "0";
+    private static final String PAGING = "paging";
+    private static final String NEXT = "next";
+    private static final String ENCODING = "UTF-8";
+    private static final String PLUS = "+";
+    private static final String PERCENT_20 = "%20";
 
-    private String index = "0";
+    // Index and query for pagination
+    private String index = ZERO;
     private String searchQuery;
 
     public static NetworkHelper getInstance() {
@@ -53,8 +58,12 @@ public class NetworkHelper {
     private NetworkHelper() {
     }
 
+    // Get Catalog is called when the users clicks on the Search Button
     public void getCatalog(String searchText, final CustomCallback callback) {
-        index = "0";
+        // Since this is a new call, set index to 0
+        // and save user's search text, both of these fields
+        // will be used later for pagination
+        index = ZERO;
         searchQuery = searchText;
         Request request = getCatalogRequest(searchText);
         enqueueCall(request, callback);
@@ -84,20 +93,24 @@ public class NetworkHelper {
         });
     }
 
+    // Called when user runs out of current results by scrolling the list
+    // Use current search query and next index to get next set of results
     public void loadMoreResults(final CustomCallback callback) {
         Request request = getCatalogRequest(searchQuery);
         enqueueCall(request, callback);
     }
 
+    // Parse response object to get next index of results
     private void getNextIndex(JSONObject responseObject) {
         try {
-            JSONObject pagingObject = responseObject.getJSONObject("paging");
-            index = pagingObject.getString("next");
+            JSONObject pagingObject = responseObject.getJSONObject(PAGING);
+            index = pagingObject.getString(NEXT);
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
+    // Build request using Endpoint and params
     private Request getCatalogRequest(String searchText) {
         HttpUrl.Builder urlBuilder = HttpUrl.parse(ApiEndpointHelper.apiEndpoint + ApiEndpointHelper.API_GET_CATALOG_RESULTS).newBuilder();
         urlBuilder.addQueryParameter(API_Q_KEY, API_Q_VAL);
@@ -116,7 +129,7 @@ public class NetworkHelper {
     private String encodeString(String string) {
         StringBuilder sb = new StringBuilder();
         try {
-            sb.append(URLEncoder.encode(string, "UTF-8").replace("+", "%20"));
+            sb.append(URLEncoder.encode(string, ENCODING).replace(PLUS, PERCENT_20));
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
