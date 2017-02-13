@@ -1,6 +1,7 @@
 package com.spatwardhan.project.coursehero.models;
 
 import com.spatwardhan.project.coursehero.helpers.PartnersHelper;
+import com.spatwardhan.project.coursehero.utils.Utils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -63,12 +64,10 @@ public abstract class CatalogElement {
     private String university;
     private ArrayList<Partner> partners;
 
-    public static List<CatalogElement> parseJsonResponse(JSONObject responseObject) throws JSONException {
-        List<CatalogElement> result = new ArrayList<>();
-        JSONObject linkedObject = responseObject.getJSONObject("linked");
+    private static void parsePartnersResponse(JSONObject linkedObject) throws JSONException {
         JSONArray partnersArray = linkedObject.getJSONArray("partners.v1");
 
-        if (partnersArray != null && partnersArray.length() > 0) {
+        if (!Utils.isNullOrEmpty(partnersArray)) {
             Map<Integer, Partner> partnerMap = PartnersHelper.getPartnerMap();
             int length = partnersArray.length();
             int id;
@@ -79,11 +78,12 @@ public abstract class CatalogElement {
                 }
             }
         }
+    }
 
+    private static Map<Integer, CatalogElement> parseCoursesResponse(JSONObject linkedObject) throws JSONException {
         JSONArray coursesArray = linkedObject.getJSONArray("courses.v1");
-
         Map<Integer, CatalogElement> coursesMap = null;
-        if (coursesArray != null && coursesArray.length() > 0) {
+        if (!Utils.isNullOrEmpty(coursesArray)) {
             coursesMap = new HashMap<>();
             CatalogElement courseElement;
             // Get length of Array instead of calling .length() many times
@@ -95,11 +95,13 @@ public abstract class CatalogElement {
                 coursesMap.put(courseElement.hashCode(), courseElement);
             }
         }
+        return coursesMap;
+    }
 
+    private static Map<Integer, CatalogElement> parseSpecializationsResponse(JSONObject linkedObject) throws JSONException {
         JSONArray specializationsArray = linkedObject.getJSONArray("onDemandSpecializations.v1");
         Map<Integer, CatalogElement> specializationsMap = null;
-
-        if (specializationsArray != null && specializationsArray.length() > 0) {
+        if (!Utils.isNullOrEmpty(specializationsArray)) {
             specializationsMap = new HashMap<>();
             CatalogElement specializationElement;
             int length = specializationsArray.length();
@@ -108,13 +110,17 @@ public abstract class CatalogElement {
                 specializationsMap.put(specializationElement.hashCode(), specializationElement);
             }
         }
+        return specializationsMap;
+    }
 
+    private static List<CatalogElement> parseEntriesResponse(JSONObject responseObject, Map<Integer, CatalogElement> coursesMap, Map<Integer, CatalogElement> specializationsMap) throws JSONException {
+        List<CatalogElement> result = new ArrayList<>();
         JSONArray elementsArray = responseObject.getJSONArray("elements");
         JSONObject first = elementsArray.getJSONObject(0);
         JSONArray entriesArray = first.getJSONArray("entries");
 
         Map<Integer, CatalogElement> sourceMap;
-        if (entriesArray != null && entriesArray.length() > 0) {
+        if (!Utils.isNullOrEmpty(entriesArray)) {
             for (int i = 0; i < entriesArray.length(); i++) {
                 JSONObject entryObject = entriesArray.getJSONObject(i);
                 String resourceName = entryObject.getString("resourceName");
@@ -127,8 +133,17 @@ public abstract class CatalogElement {
                 }
             }
         }
-
         return result;
+    }
+
+    public static List<CatalogElement> parseJsonResponse(JSONObject responseObject) throws JSONException {
+        JSONObject linkedObject = responseObject.getJSONObject("linked");
+
+        parsePartnersResponse(linkedObject);
+        Map<Integer, CatalogElement> coursesMap = parseCoursesResponse(linkedObject);
+        Map<Integer, CatalogElement> specializationsMap = parseSpecializationsResponse(linkedObject);
+
+        return parseEntriesResponse(responseObject, coursesMap, specializationsMap);
     }
 
     void buildObject(JSONObject jsonObject) throws JSONException {

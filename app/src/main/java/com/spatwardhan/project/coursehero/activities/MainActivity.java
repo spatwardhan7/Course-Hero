@@ -40,6 +40,7 @@ public class MainActivity extends Activity {
         networkHelper.getCatalog(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
             }
 
             @Override
@@ -51,7 +52,7 @@ public class MainActivity extends Activity {
                         System.out.println(catalogElements.size());
                     }
                 } catch (JSONException e) {
-
+                    e.printStackTrace();
                 }
             }
         });
