@@ -30,7 +30,7 @@ import butterknife.OnClick;
 import butterknife.OnTextChanged;
 import okhttp3.Call;
 
-public class MainActivity extends Activity {
+public class CatalogSearchActivity extends Activity {
     // Layout Views
     @BindView(R.id.searchEditText)
     EditText searchEditText;
@@ -48,7 +48,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_catalog_search);
         ButterKnife.bind(this);
 
         // Get instance of Singleton Network Helper

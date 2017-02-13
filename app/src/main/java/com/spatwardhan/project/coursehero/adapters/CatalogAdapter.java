@@ -74,6 +74,7 @@ public class CatalogAdapter extends ArrayAdapter<CatalogElement> {
             viewHolder.numberOfCourses.setVisibility(View.GONE);
         }
 
+        viewHolder.imageView.setImageResource(0);
         viewHolder.courseName.setText(catalogElement.getName());
         viewHolder.universityName.setText(sb.toString());
         viewHolder.description.setText(catalogElement.getDescription());

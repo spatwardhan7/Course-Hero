@@ -8,12 +8,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class CatalogElement {
+public abstract class CatalogElement implements Serializable {
     private String id;
     private String photoUrl;
     private String name;
@@ -70,6 +71,7 @@ public abstract class CatalogElement {
         JSONArray coursesArray = linkedObject.getJSONArray(ApiEndpointHelper.COURSES_VERSION);
         Map<Integer, CatalogElement> coursesMap = null;
         if (!Utils.isNullOrEmpty(coursesArray)) {
+            // Using a hashmap for faster looks ups
             coursesMap = new HashMap<>();
             CatalogElement courseElement;
             int length = coursesArray.length();
@@ -85,6 +87,7 @@ public abstract class CatalogElement {
         JSONArray specializationsArray = linkedObject.getJSONArray(ApiEndpointHelper.SPECIALIZATIONS_VERSION);
         Map<Integer, CatalogElement> specializationsMap = null;
         if (!Utils.isNullOrEmpty(specializationsArray)) {
+            // Using a hashmap for faster looks ups
             specializationsMap = new HashMap<>();
             CatalogElement specializationElement;
             int length = specializationsArray.length();
