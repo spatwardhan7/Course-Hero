@@ -1,5 +1,10 @@
 package com.spatwardhan.project.coursehero.helpers;
 
+import com.spatwardhan.project.coursehero.callbacks.CustomCallback;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 
 import okhttp3.Call;
@@ -32,8 +37,9 @@ public class NetworkHelper {
     private static final String API_INCLUDES_KEY = "includes";
     private static final String API_INCLUDES_VAL = "courseId,onDemandSpecializationId,courses.v1(partnerIds)";
 
-    // Page count variable
-    private int page = 1;
+
+    private int index = 0;
+    private String searchQuery;
 
     public static NetworkHelper getInstance() {
         // Non-Thread Safe Singleton implementation
@@ -50,7 +56,9 @@ public class NetworkHelper {
     private NetworkHelper() {
     }
 
-    public void getCatalog(String searchText, final Callback callback) {
+    public void getCatalog(String searchText, final CustomCallback callback) {
+        index = 0;
+        searchQuery = searchText;
         Request request = getCatalogRequest(searchText);
         client.newCall(request).enqueue(new Callback() {
             @Override
@@ -61,7 +69,13 @@ public class NetworkHelper {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 if (response.isSuccessful()) {
-                    callback.onResponse(call, response);
+                    try {
+                        JSONObject jsonObject = new JSONObject((response.body().string()));
+                        getNextIndex(jsonObject);
+                        callback.onResponse(call, jsonObject);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                 } else {
                     throw new IOException("Unexpected code " + response);
                 }
@@ -69,10 +83,19 @@ public class NetworkHelper {
         });
     }
 
+    private void getNextIndex(JSONObject responseObject) {
+        try {
+            JSONObject pagingObject = responseObject.getJSONObject("paging");
+            index = Integer.valueOf(pagingObject.getString("next"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
     private Request getCatalogRequest(String searchText) {
         HttpUrl.Builder urlBuilder = HttpUrl.parse(ApiEndpointHelper.apiEndpoint + ApiEndpointHelper.API_GET_CATALOG_RESULTS).newBuilder();
         urlBuilder.addQueryParameter(API_Q_KEY, API_Q_VAL);
-        urlBuilder.addQueryParameter(API_QUERY_KEY, searchText);
+        urlBuilder.addQueryParameter(API_QUERY_KEY, searchText.replace(" ", "%20"));
         urlBuilder.addQueryParameter(API_START_KEY, API_START_VAL);
         urlBuilder.addQueryParameter(API_LIMIT_KEY, API_LIMIT_VAL);
         urlBuilder.addQueryParameter(API_FIELDS_KEY, API_FIELDS_VAL);

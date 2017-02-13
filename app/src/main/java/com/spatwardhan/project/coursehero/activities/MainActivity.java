@@ -9,6 +9,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 
+import com.spatwardhan.project.coursehero.callbacks.CustomCallback;
 import com.spatwardhan.project.coursehero.R;
 import com.spatwardhan.project.coursehero.adapters.CatalogAdapter;
 import com.spatwardhan.project.coursehero.helpers.NetworkHelper;
@@ -25,8 +26,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.Response;
 
 public class MainActivity extends Activity {
     // Layout Views
@@ -77,16 +76,15 @@ public class MainActivity extends Activity {
     }
 
     private void getCatalog(String searchText) {
-        networkHelper.getCatalog(searchText, new Callback() {
+        networkHelper.getCatalog(searchText, new CustomCallback() {
             @Override
             public void onFailure(Call call, IOException e) {
                 e.printStackTrace();
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
+            public void onResponse(Call call, JSONObject jsonObject) throws JSONException {
                 try {
-                    JSONObject jsonObject = new JSONObject((response.body().string()));
                     if (jsonObject.length() > 0) {
                         catalogElements.addAll(CatalogElement.parseJsonResponse(jsonObject));
                         MainActivity.this.runOnUiThread(new Runnable() {
