@@ -9,9 +9,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 
-import com.spatwardhan.project.coursehero.callbacks.CustomCallback;
 import com.spatwardhan.project.coursehero.R;
 import com.spatwardhan.project.coursehero.adapters.CatalogAdapter;
+import com.spatwardhan.project.coursehero.callbacks.CustomCallback;
 import com.spatwardhan.project.coursehero.helpers.NetworkHelper;
 import com.spatwardhan.project.coursehero.models.CatalogElement;
 
@@ -87,16 +87,20 @@ public class MainActivity extends Activity {
                 try {
                     if (jsonObject.length() > 0) {
                         catalogElements.addAll(CatalogElement.parseJsonResponse(jsonObject));
-                        MainActivity.this.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                catalogAdapter.notifyDataSetChanged();
-                            }
-                        });
+                        updateUI();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+            }
+        });
+    }
+
+    private void updateUI() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                catalogAdapter.notifyDataSetChanged();
             }
         });
     }
