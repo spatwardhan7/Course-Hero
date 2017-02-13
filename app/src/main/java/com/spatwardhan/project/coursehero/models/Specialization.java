@@ -8,8 +8,14 @@ import org.json.JSONObject;
  */
 
 public class Specialization extends CatalogElement {
+    private static final String courses = " courses";
+
     public int getCourseNum() {
         return courseNum;
+    }
+
+    public String getCoursesString() {
+        return courseNum + courses;
     }
 
     private int courseNum;

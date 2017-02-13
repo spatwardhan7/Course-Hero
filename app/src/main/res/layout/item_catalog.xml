@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/logoImageView"
+        android:layout_width="@dimen/image_height"
+        android:layout_height="@dimen/image_height"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/activity_horizontal_margin"
+        android:scaleType="centerCrop"
+        tools:src="@mipmap/ic_launcher" />
+
+    <TextView
+        android:id="@+id/nameTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/logoImageView"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_toEndOf="@+id/logoImageView"
+        android:layout_toRightOf="@+id/logoImageView"
+        android:includeFontPadding="false"
+        android:textSize="@dimen/large_font_size"
+        tools:text="Machine Learning" />
+
+    <TextView
+        android:id="@+id/universityNameTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/nameTextView"
+        android:layout_alignStart="@+id/nameTextView"
+        android:layout_below="@+id/nameTextView"
+        android:layout_marginTop="@dimen/small_margin"
+        tools:text="University of Washington" />
+
+    <TextView
+        android:id="@+id/numberOfCoursesTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/universityNameTextView"
+        android:layout_alignStart="@+id/universityNameTextView"
+        android:layout_below="@+id/universityNameTextView"
+        android:layout_marginTop="@dimen/small_margin"
+        android:visibility="gone"
+        tools:text="4 courses" />
+
+    <TextView
+        android:id="@+id/descriptionTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/logoImageView"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignStart="@+id/logoImageView"
+        android:layout_below="@+id/logoImageView"
+        android:layout_marginTop="@dimen/activity_horizontal_margin"
+        android:ellipsize="end"
+        android:maxLines="3"
+        android:paddingBottom="@dimen/activity_horizontal_margin"
+        tools:text="@string/description_test" />
+
+
+</RelativeLayout>

@@ -49,19 +49,15 @@ public abstract class CatalogElement {
         this.description = description;
     }
 
-    public String getUniversity() {
-        return university;
-    }
-
-    void setUniversity(String university) {
-        this.university = university;
-    }
-
     private String id;
     private String photoUrl;
     private String name;
     private String description;
-    private String university;
+
+    public ArrayList<Partner> getPartners() {
+        return partners;
+    }
+
     private ArrayList<Partner> partners;
 
     private static void parsePartnersResponse(JSONObject linkedObject) throws JSONException {

@@ -50,8 +50,8 @@ public class NetworkHelper {
     private NetworkHelper() {
     }
 
-    public void getCatalog(final Callback callback) {
-        Request request = getCatalogRequest();
+    public void getCatalog(String searchText, final Callback callback) {
+        Request request = getCatalogRequest(searchText);
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
@@ -69,10 +69,10 @@ public class NetworkHelper {
         });
     }
 
-    private Request getCatalogRequest() {
+    private Request getCatalogRequest(String searchText) {
         HttpUrl.Builder urlBuilder = HttpUrl.parse(ApiEndpointHelper.apiEndpoint + ApiEndpointHelper.API_GET_CATALOG_RESULTS).newBuilder();
         urlBuilder.addQueryParameter(API_Q_KEY, API_Q_VAL);
-        urlBuilder.addQueryParameter(API_QUERY_KEY, API_QUERY_VAL);
+        urlBuilder.addQueryParameter(API_QUERY_KEY, searchText);
         urlBuilder.addQueryParameter(API_START_KEY, API_START_VAL);
         urlBuilder.addQueryParameter(API_LIMIT_KEY, API_LIMIT_VAL);
         urlBuilder.addQueryParameter(API_FIELDS_KEY, API_FIELDS_VAL);

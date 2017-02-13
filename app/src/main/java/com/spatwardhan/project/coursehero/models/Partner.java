@@ -19,7 +19,7 @@ public class Partner {
     private int id;
     private String name;
 
-    public Partner(JSONObject partnersObject) throws JSONException {
+    Partner(JSONObject partnersObject) throws JSONException {
         id = partnersObject.getInt("id");
         name = partnersObject.getString("name");
     }
