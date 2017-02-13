@@ -12,11 +12,140 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by zky447 on 2/11/17.
- */
-
 public abstract class CatalogElement {
+    private String id;
+    private String photoUrl;
+    private String name;
+    private String description;
+    private ArrayList<Partner> partners;
+
+    // Keys used for parsing response
+    private static final String LINKED = "linked";
+    private static final String ID = "id";
+    private static final String ELEMENTS = "elements";
+    private static final String ENTRIES = "entries";
+    private static final String RESOURCE_NAME = "resourceName";
+    private static final String NAME = "name";
+    private static final String DESCRIPTION = "description";
+    private static final String PARTNER_IDS = "partnerIds";
+
+    public static List<CatalogElement> parseJsonResponse(JSONObject responseObject) throws JSONException {
+        JSONObject linkedObject = responseObject.getJSONObject(LINKED);
+
+        parsePartnersResponse(linkedObject);
+        Map<Integer, CatalogElement> coursesMap = parseCoursesResponse(linkedObject);
+        Map<Integer, CatalogElement> specializationsMap = parseSpecializationsResponse(linkedObject);
+
+        return parseEntriesResponse(responseObject, coursesMap, specializationsMap);
+    }
+
+    private static void parsePartnersResponse(JSONObject linkedObject) throws JSONException {
+        JSONArray partnersArray = linkedObject.getJSONArray("partners.v1");
+
+        if (!Utils.isNullOrEmpty(partnersArray)) {
+            Map<Integer, Partner> partnerMap = PartnersHelper.getPartnerMap();
+            // Get length of Array instead of calling .length() many times
+            // in for loop for better efficiency
+            // Source : https://developer.android.com/training/articles/perf-tips.html#Loops
+            int length = partnersArray.length();
+            int id;
+            for (int i = 0; i < length; i++) {
+                id = partnersArray.getJSONObject(i).getInt(ID);
+                if (!partnerMap.containsKey(id)) {
+                    partnerMap.put(id, new Partner(partnersArray.getJSONObject(i)));
+                }
+            }
+        }
+    }
+
+    private static Map<Integer, CatalogElement> parseCoursesResponse(JSONObject linkedObject) throws JSONException {
+        JSONArray coursesArray = linkedObject.getJSONArray("courses.v1");
+        Map<Integer, CatalogElement> coursesMap = null;
+        if (!Utils.isNullOrEmpty(coursesArray)) {
+            coursesMap = new HashMap<>();
+            CatalogElement courseElement;
+            int length = coursesArray.length();
+            for (int i = 0; i < length; i++) {
+                courseElement = new Course(coursesArray.getJSONObject(i));
+                coursesMap.put(courseElement.hashCode(), courseElement);
+            }
+        }
+        return coursesMap;
+    }
+
+    private static Map<Integer, CatalogElement> parseSpecializationsResponse(JSONObject linkedObject) throws JSONException {
+        JSONArray specializationsArray = linkedObject.getJSONArray("onDemandSpecializations.v1");
+        Map<Integer, CatalogElement> specializationsMap = null;
+        if (!Utils.isNullOrEmpty(specializationsArray)) {
+            specializationsMap = new HashMap<>();
+            CatalogElement specializationElement;
+            int length = specializationsArray.length();
+            for (int i = 0; i < length; i++) {
+                specializationElement = new Specialization(specializationsArray.getJSONObject(i));
+                specializationsMap.put(specializationElement.hashCode(), specializationElement);
+            }
+        }
+        return specializationsMap;
+    }
+
+    private static List<CatalogElement> parseEntriesResponse(JSONObject responseObject, Map<Integer, CatalogElement> coursesMap, Map<Integer, CatalogElement> specializationsMap) throws JSONException {
+        List<CatalogElement> result = new ArrayList<>();
+        JSONArray elementsArray = responseObject.getJSONArray(ELEMENTS);
+        JSONObject first = elementsArray.getJSONObject(0);
+        JSONArray entriesArray = first.getJSONArray(ENTRIES);
+
+        Map<Integer, CatalogElement> sourceMap;
+        if (!Utils.isNullOrEmpty(entriesArray)) {
+            for (int i = 0; i < entriesArray.length(); i++) {
+                JSONObject entryObject = entriesArray.getJSONObject(i);
+                String resourceName = entryObject.getString(RESOURCE_NAME);
+                Integer id = entryObject.getString(ID).hashCode();
+
+                sourceMap = (resourceName.equals("courses.v1")) ? coursesMap : specializationsMap;
+
+                if (sourceMap != null && sourceMap.containsKey(id)) {
+                    result.add(sourceMap.get(id));
+                }
+            }
+        }
+        return result;
+    }
+
+    // Method called by both subclasses which implements common functionality
+    final void buildObject(JSONObject jsonObject) throws JSONException {
+        id = jsonObject.getString(ID);
+        name = jsonObject.getString(NAME);
+        description = jsonObject.getString(DESCRIPTION);
+        partners = new ArrayList<>();
+
+        Map<Integer, Partner> partnerMap = PartnersHelper.getPartnerMap();
+        JSONArray partnersArray = jsonObject.getJSONArray(PARTNER_IDS);
+        if (partnersArray != null && partnersArray.length() > 0) {
+            int length = partnersArray.length();
+            int id;
+            for (int i = 0; i < length; i++) {
+                id = Integer.valueOf(partnersArray.getString(i));
+                if (partnerMap.containsKey(id)) {
+                    partners.add(partnerMap.get(id));
+                }
+            }
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        CatalogElement element = (CatalogElement) obj;
+        return id.equals(element.getId());
+    }
+
     public String getId() {
         return id;
     }
@@ -49,130 +178,7 @@ public abstract class CatalogElement {
         this.description = description;
     }
 
-    private String id;
-    private String photoUrl;
-    private String name;
-    private String description;
-
     public ArrayList<Partner> getPartners() {
         return partners;
-    }
-
-    private ArrayList<Partner> partners;
-
-    private static void parsePartnersResponse(JSONObject linkedObject) throws JSONException {
-        JSONArray partnersArray = linkedObject.getJSONArray("partners.v1");
-
-        if (!Utils.isNullOrEmpty(partnersArray)) {
-            Map<Integer, Partner> partnerMap = PartnersHelper.getPartnerMap();
-            int length = partnersArray.length();
-            int id;
-            for (int i = 0; i < length; i++) {
-                id = partnersArray.getJSONObject(i).getInt("id");
-                if (!partnerMap.containsKey(id)) {
-                    partnerMap.put(id, new Partner(partnersArray.getJSONObject(i)));
-                }
-            }
-        }
-    }
-
-    private static Map<Integer, CatalogElement> parseCoursesResponse(JSONObject linkedObject) throws JSONException {
-        JSONArray coursesArray = linkedObject.getJSONArray("courses.v1");
-        Map<Integer, CatalogElement> coursesMap = null;
-        if (!Utils.isNullOrEmpty(coursesArray)) {
-            coursesMap = new HashMap<>();
-            CatalogElement courseElement;
-            // Get length of Array instead of calling .length() many times
-            // in for loop for better efficiency
-            // Source : https://developer.android.com/training/articles/perf-tips.html#Loops
-            int length = coursesArray.length();
-            for (int i = 0; i < length; i++) {
-                courseElement = new Course(coursesArray.getJSONObject(i));
-                coursesMap.put(courseElement.hashCode(), courseElement);
-            }
-        }
-        return coursesMap;
-    }
-
-    private static Map<Integer, CatalogElement> parseSpecializationsResponse(JSONObject linkedObject) throws JSONException {
-        JSONArray specializationsArray = linkedObject.getJSONArray("onDemandSpecializations.v1");
-        Map<Integer, CatalogElement> specializationsMap = null;
-        if (!Utils.isNullOrEmpty(specializationsArray)) {
-            specializationsMap = new HashMap<>();
-            CatalogElement specializationElement;
-            int length = specializationsArray.length();
-            for (int i = 0; i < length; i++) {
-                specializationElement = new Specialization(specializationsArray.getJSONObject(i));
-                specializationsMap.put(specializationElement.hashCode(), specializationElement);
-            }
-        }
-        return specializationsMap;
-    }
-
-    private static List<CatalogElement> parseEntriesResponse(JSONObject responseObject, Map<Integer, CatalogElement> coursesMap, Map<Integer, CatalogElement> specializationsMap) throws JSONException {
-        List<CatalogElement> result = new ArrayList<>();
-        JSONArray elementsArray = responseObject.getJSONArray("elements");
-        JSONObject first = elementsArray.getJSONObject(0);
-        JSONArray entriesArray = first.getJSONArray("entries");
-
-        Map<Integer, CatalogElement> sourceMap;
-        if (!Utils.isNullOrEmpty(entriesArray)) {
-            for (int i = 0; i < entriesArray.length(); i++) {
-                JSONObject entryObject = entriesArray.getJSONObject(i);
-                String resourceName = entryObject.getString("resourceName");
-                Integer id = entryObject.getString("id").hashCode();
-
-                sourceMap = (resourceName.equals("courses.v1")) ? coursesMap : specializationsMap;
-
-                if (sourceMap != null && sourceMap.containsKey(id)) {
-                    result.add(sourceMap.get(id));
-                }
-            }
-        }
-        return result;
-    }
-
-    public static List<CatalogElement> parseJsonResponse(JSONObject responseObject) throws JSONException {
-        JSONObject linkedObject = responseObject.getJSONObject("linked");
-
-        parsePartnersResponse(linkedObject);
-        Map<Integer, CatalogElement> coursesMap = parseCoursesResponse(linkedObject);
-        Map<Integer, CatalogElement> specializationsMap = parseSpecializationsResponse(linkedObject);
-
-        return parseEntriesResponse(responseObject, coursesMap, specializationsMap);
-    }
-
-    void buildObject(JSONObject jsonObject) throws JSONException {
-        id = jsonObject.getString("id");
-        name = jsonObject.getString("name");
-        description = jsonObject.getString("description");
-
-        Map<Integer, Partner> partnerMap = PartnersHelper.getPartnerMap();
-        JSONArray partnersArray = jsonObject.getJSONArray("partnerIds");
-        if (partnersArray != null && partnersArray.length() > 0) {
-            partners = new ArrayList<>();
-            int length = partnersArray.length();
-            int id;
-            for (int i = 0; i < length; i++) {
-                id = Integer.valueOf(partnersArray.getString(i));
-                if (partnerMap.containsKey(id)) {
-                    partners.add(partnerMap.get(id));
-                }
-            }
-        }
-    }
-
-    @Override
-    public int hashCode() {
-        return id.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        CatalogElement element = (CatalogElement) obj;
-        return id.equals(element.getId());
     }
 }

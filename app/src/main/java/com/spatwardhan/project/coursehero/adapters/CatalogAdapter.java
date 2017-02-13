@@ -20,10 +20,6 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-/**
- * Created by zky447 on 2/12/17.
- */
-
 public class CatalogAdapter extends ArrayAdapter<CatalogElement> {
     public CatalogAdapter(Context context, List<CatalogElement> elementList) {
         super(context, R.layout.item_catalog, elementList);
@@ -65,13 +61,16 @@ public class CatalogAdapter extends ArrayAdapter<CatalogElement> {
         }
 
         StringBuilder sb = new StringBuilder();
-        for (Partner partner : catalogElement.getPartners()) {
+        if (catalogElement.getPartners() != null && catalogElement.getPartners().size() > 0) {
+            Partner partner = catalogElement.getPartners().get(0);
             sb.append(partner.getName());
         }
 
         if (catalogElement instanceof Specialization) {
             viewHolder.numberOfCourses.setVisibility(View.VISIBLE);
             viewHolder.numberOfCourses.setText(((Specialization) catalogElement).getCoursesString());
+        } else {
+            viewHolder.numberOfCourses.setVisibility(View.GONE);
         }
 
         viewHolder.courseName.setText(catalogElement.getName());
