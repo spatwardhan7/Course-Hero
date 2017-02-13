@@ -25,6 +25,7 @@ public class CatalogAdapter extends ArrayAdapter<CatalogElement> {
         super(context, R.layout.item_catalog, elementList);
     }
 
+    // View Holder Pattern for smooth scrolling
     static class ViewHolder {
         @BindView(R.id.logoImageView)
         ImageView imageView;

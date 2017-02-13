@@ -30,6 +30,13 @@ public abstract class CatalogElement {
     private static final String DESCRIPTION = "description";
     private static final String PARTNER_IDS = "partnerIds";
 
+    /* Response is parsed in 4 steps:
+     *   1) Parse Partners Response and build Partners map of <partnerID, Partner>
+     *   2) Parse Courses response in linked and build Courses map of <courseID, Course>
+     *   3) Parse onDemandSpecializations in response in linked and build Specialization map of <specializationID, Specialization>
+     *   4) Parse entries array in elements response. For every entry, get either course or specialization from the map
+     *      based on id and add it to results.
+     */
     public static List<CatalogElement> parseJsonResponse(JSONObject responseObject) throws JSONException {
         JSONObject linkedObject = responseObject.getJSONObject(LINKED);
 
@@ -100,10 +107,9 @@ public abstract class CatalogElement {
             for (int i = 0; i < entriesArray.length(); i++) {
                 JSONObject entryObject = entriesArray.getJSONObject(i);
                 String resourceName = entryObject.getString(RESOURCE_NAME);
+                sourceMap = (resourceName.equalsIgnoreCase(ApiEndpointHelper.COURSES_VERSION)) ? coursesMap : specializationsMap;
+
                 Integer id = entryObject.getString(ID).hashCode();
-
-                sourceMap = (resourceName.equals(ApiEndpointHelper.COURSES_VERSION)) ? coursesMap : specializationsMap;
-
                 if (sourceMap != null && sourceMap.containsKey(id)) {
                     result.add(sourceMap.get(id));
                 }
@@ -113,6 +119,7 @@ public abstract class CatalogElement {
     }
 
     // Method called by both subclasses which implements common functionality
+    // of getting id, name, description and partners
     final void buildObject(JSONObject jsonObject) throws JSONException {
         id = jsonObject.getString(ID);
         name = jsonObject.getString(NAME);

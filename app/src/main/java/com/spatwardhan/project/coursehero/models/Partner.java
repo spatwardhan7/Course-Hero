@@ -4,20 +4,24 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class Partner {
+    // Keys for parsing
+    private static final String ID = "id";
+    private static final String NAME = "name";
+
+    private int id;
+    private String name;
+
+    Partner(JSONObject partnersObject) throws JSONException {
+        id = partnersObject.getInt(ID);
+        name = partnersObject.getString(NAME);
+    }
+
     public int getId() {
         return id;
     }
 
     public String getName() {
         return name;
-    }
-
-    private int id;
-    private String name;
-
-    Partner(JSONObject partnersObject) throws JSONException {
-        id = partnersObject.getInt("id");
-        name = partnersObject.getString("name");
     }
 
     @Override
