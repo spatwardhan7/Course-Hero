@@ -3,7 +3,9 @@ package com.spatwardhan.project.coursehero.models;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class Partner {
+import java.io.Serializable;
+
+public class Partner implements Serializable {
     // Keys for parsing
     private static final String ID = "id";
     private static final String NAME = "name";

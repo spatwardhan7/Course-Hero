@@ -1,10 +1,12 @@
 package com.spatwardhan.project.coursehero.activities;
 
-import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -30,7 +32,7 @@ import butterknife.OnClick;
 import butterknife.OnTextChanged;
 import okhttp3.Call;
 
-public class CatalogSearchActivity extends Activity {
+public class CatalogSearchActivity extends AppCompatActivity {
     // Layout Views
     @BindView(R.id.searchEditText)
     EditText searchEditText;
@@ -44,6 +46,9 @@ public class CatalogSearchActivity extends Activity {
     private NetworkHelper networkHelper;
     private List<CatalogElement> catalogElements;
     private CatalogAdapter catalogAdapter;
+
+    // Intent key
+    protected static final String CATALOG_EXTRA = "extra";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +67,14 @@ public class CatalogSearchActivity extends Activity {
         catalogElements = new ArrayList<>();
         catalogAdapter = new CatalogAdapter(this, catalogElements);
         listView.setAdapter(catalogAdapter);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                openDetailsView(position);
+            }
+        });
+
         listView.setOnScrollListener(new EndlessScrollListener() {
             @Override
             public boolean onLoadMore(int page, int totalItemsCount) {
@@ -139,6 +152,15 @@ public class CatalogSearchActivity extends Activity {
                 }
             }
         });
+    }
+
+    private void openDetailsView(int position) {
+        Intent intent = new Intent(this, ElementDetailsActivity.class);
+        //intent.putExtra(CATALOG_EXTRA, catalogElements.get(position));
+        Bundle bundle = new Bundle();
+        bundle.putSerializable(CATALOG_EXTRA, catalogElements.get(position));
+        intent.putExtras(bundle);
+        startActivity(intent);
     }
 
     private void updateUI(final boolean scrollUp) {

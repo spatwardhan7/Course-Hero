@@ -10,5 +10,6 @@ public class PartnersHelper {
         return partnerMap;
     }
 
+    // Using a hashmap since it is has faster lookups as compared to SparseArrays
     static Map<Integer, Partner> partnerMap = new HashMap<>();
 }

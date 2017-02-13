@@ -8,6 +8,7 @@
 
     // Image Size
     <dimen name="image_height">72dp</dimen>
+    <dimen name="image_height_large">244dp</dimen>
 
     // Font Size
     <dimen name="large_font_size">16sp</dimen>

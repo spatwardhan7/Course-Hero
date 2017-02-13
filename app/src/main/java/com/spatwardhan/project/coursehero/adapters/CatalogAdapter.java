@@ -75,12 +75,12 @@ public class CatalogAdapter extends ArrayAdapter<CatalogElement> {
         }
 
         viewHolder.imageView.setImageResource(0);
-        viewHolder.courseName.setText(catalogElement.getName());
-        viewHolder.universityName.setText(sb.toString());
-        viewHolder.description.setText(catalogElement.getDescription());
         Picasso.with(getContext()).load(catalogElement.getPhotoUrl())
                 .placeholder(R.drawable.placeholder)
                 .into(viewHolder.imageView);
+        viewHolder.courseName.setText(catalogElement.getName());
+        viewHolder.universityName.setText(sb.toString());
+        viewHolder.description.setText(catalogElement.getDescription());
 
         return convertView;
     }
