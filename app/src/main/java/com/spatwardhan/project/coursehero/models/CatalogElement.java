@@ -1,5 +1,6 @@
 package com.spatwardhan.project.coursehero.models;
 
+import com.spatwardhan.project.coursehero.helpers.ApiEndpointHelper;
 import com.spatwardhan.project.coursehero.helpers.PartnersHelper;
 import com.spatwardhan.project.coursehero.utils.Utils;
 
@@ -40,7 +41,7 @@ public abstract class CatalogElement {
     }
 
     private static void parsePartnersResponse(JSONObject linkedObject) throws JSONException {
-        JSONArray partnersArray = linkedObject.getJSONArray("partners.v1");
+        JSONArray partnersArray = linkedObject.getJSONArray(ApiEndpointHelper.PARTNERS_VERSION);
 
         if (!Utils.isNullOrEmpty(partnersArray)) {
             Map<Integer, Partner> partnerMap = PartnersHelper.getPartnerMap();
@@ -59,7 +60,7 @@ public abstract class CatalogElement {
     }
 
     private static Map<Integer, CatalogElement> parseCoursesResponse(JSONObject linkedObject) throws JSONException {
-        JSONArray coursesArray = linkedObject.getJSONArray("courses.v1");
+        JSONArray coursesArray = linkedObject.getJSONArray(ApiEndpointHelper.COURSES_VERSION);
         Map<Integer, CatalogElement> coursesMap = null;
         if (!Utils.isNullOrEmpty(coursesArray)) {
             coursesMap = new HashMap<>();
@@ -74,7 +75,7 @@ public abstract class CatalogElement {
     }
 
     private static Map<Integer, CatalogElement> parseSpecializationsResponse(JSONObject linkedObject) throws JSONException {
-        JSONArray specializationsArray = linkedObject.getJSONArray("onDemandSpecializations.v1");
+        JSONArray specializationsArray = linkedObject.getJSONArray(ApiEndpointHelper.SPECIALIZATIONS_VERSION);
         Map<Integer, CatalogElement> specializationsMap = null;
         if (!Utils.isNullOrEmpty(specializationsArray)) {
             specializationsMap = new HashMap<>();
@@ -101,7 +102,7 @@ public abstract class CatalogElement {
                 String resourceName = entryObject.getString(RESOURCE_NAME);
                 Integer id = entryObject.getString(ID).hashCode();
 
-                sourceMap = (resourceName.equals("courses.v1")) ? coursesMap : specializationsMap;
+                sourceMap = (resourceName.equals(ApiEndpointHelper.COURSES_VERSION)) ? coursesMap : specializationsMap;
 
                 if (sourceMap != null && sourceMap.containsKey(id)) {
                     result.add(sourceMap.get(id));
