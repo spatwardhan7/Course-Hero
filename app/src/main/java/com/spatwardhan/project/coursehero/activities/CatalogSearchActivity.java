@@ -1,22 +1,21 @@
 package com.spatwardhan.project.coursehero.activities;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
 
 import com.kaopiz.kprogresshud.KProgressHUD;
 import com.spatwardhan.project.coursehero.R;
 import com.spatwardhan.project.coursehero.adapters.CatalogAdapter;
 import com.spatwardhan.project.coursehero.callbacks.CustomCallback;
 import com.spatwardhan.project.coursehero.helpers.NetworkHelper;
-import com.spatwardhan.project.coursehero.listeners.EndlessScrollListener;
+import com.spatwardhan.project.coursehero.listeners.EndlessRecyclerViewScrollListener;
 import com.spatwardhan.project.coursehero.models.CatalogElement;
 
 import org.json.JSONException;
@@ -40,12 +39,14 @@ public class CatalogSearchActivity extends AppCompatActivity {
     @BindView(R.id.searchButton)
     Button searchButton;
 
-    @BindView(R.id.listView)
-    ListView listView;
+    @BindView(R.id.recyclerView)
+    RecyclerView recyclerView;
 
     private NetworkHelper networkHelper;
     private List<CatalogElement> catalogElements;
     private CatalogAdapter catalogAdapter;
+    private LinearLayoutManager linearLayoutManager;
+    private EndlessRecyclerViewScrollListener scrollListener;
 
     // Intent key
     protected static final String CATALOG_EXTRA = "extra";
@@ -66,22 +67,17 @@ public class CatalogSearchActivity extends AppCompatActivity {
     private void initialize() {
         catalogElements = new ArrayList<>();
         catalogAdapter = new CatalogAdapter(this, catalogElements);
-        listView.setAdapter(catalogAdapter);
+        linearLayoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(linearLayoutManager);
 
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        scrollListener = new EndlessRecyclerViewScrollListener(linearLayoutManager) {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                openDetailsView(position);
-            }
-        });
-
-        listView.setOnScrollListener(new EndlessScrollListener() {
-            @Override
-            public boolean onLoadMore(int page, int totalItemsCount) {
+            public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
                 loadMoreResults();
-                return true;
             }
-        });
+        };
+        recyclerView.addOnScrollListener(scrollListener);
+        recyclerView.setAdapter(catalogAdapter);
     }
 
     private void loadMoreResults() {
@@ -154,22 +150,15 @@ public class CatalogSearchActivity extends AppCompatActivity {
         });
     }
 
-    private void openDetailsView(int position) {
-        Intent intent = new Intent(this, ElementDetailsActivity.class);
-        //intent.putExtra(CATALOG_EXTRA, catalogElements.get(position));
-        Bundle bundle = new Bundle();
-        bundle.putSerializable(CATALOG_EXTRA, catalogElements.get(position));
-        intent.putExtras(bundle);
-        startActivity(intent);
-    }
-
     private void updateUI(final boolean scrollUp) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 catalogAdapter.notifyDataSetChanged();
                 if (scrollUp) {
-                    listView.setSelectionAfterHeaderView();
+                    //recyclerView.setSelectionAfterHeaderView();
+                    linearLayoutManager.scrollToPosition(0);
+                    scrollListener.resetState();
                 }
             }
         });
